@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_dev
+    ports:
+      - '5432:5432' # 로컬(내 PC)에서 5432로 접속 가능하게 함
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data # 데이터 보존
