@@ -5,6 +5,7 @@ WORKDIR /app
 
 # pnpm 활성화 (corepack)
 RUN corepack enable
+RUN corepack prepare pnpm@10.28.2 --activate
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
@@ -19,6 +20,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 RUN corepack enable
+RUN corepack prepare pnpm@10.28.2 --activate
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod
