@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   api:
-    build: .
+    image: 643766342252.dkr.ecr.ap-northeast-2.amazonaws.com/kanban-server:latest
     container_name: nest_api_prod
     restart: always
     ports:
