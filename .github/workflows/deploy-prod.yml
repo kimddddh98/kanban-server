@@ -40,3 +40,31 @@ jobs:
           tags: |
             ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:latest
             ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --region "${{ vars.AWS_REGION }}" \
+            --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy kanban-server from ECR" \
+            --parameters commands='[
+              "cd ${{ vars.EC2_DEPLOY_PATH }}",
+              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
+              "docker compose -f docker-compose.prod.yml pull api",
+              "docker compose -f docker-compose.prod.yml up -d",
+              "docker compose -f docker-compose.prod.yml ps",
+              "curl -f http://localhost:3000/health"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+
+          aws ssm wait command-executed \
+            --region "${{ vars.AWS_REGION }}" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ vars.EC2_INSTANCE_ID }}"
+
+          aws ssm get-command-invocation \
+            --region "${{ vars.AWS_REGION }}" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ vars.EC2_INSTANCE_ID }}"
