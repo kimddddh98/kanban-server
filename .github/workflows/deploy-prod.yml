@@ -41,6 +41,22 @@ jobs:
             ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:latest
             ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
 
+  deploy:
+    name: Deploy image to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
       - name: Deploy to EC2 via SSM
         run: |
           COMMAND_ID=$(aws ssm send-command \
@@ -58,13 +74,21 @@ jobs:
             ]' \
             --query "Command.CommandId" \
             --output text)
+          echo "SSM command id: $COMMAND_ID"
 
+          set +e
           aws ssm wait command-executed \
             --region "${{ vars.AWS_REGION }}" \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ vars.EC2_INSTANCE_ID }}"
+          WAIT_EXIT_CODE=$?
+          set -e
 
           aws ssm get-command-invocation \
             --region "${{ vars.AWS_REGION }}" \
             --command-id "$COMMAND_ID" \
-            --instance-id "${{ vars.EC2_INSTANCE_ID }}"
+            --instance-id "${{ vars.EC2_INSTANCE_ID }}" \
+            --query '{Status:Status,ResponseCode:ResponseCode,StandardOutputContent:StandardOutputContent,StandardErrorContent:StandardErrorContent}' \
+            --output json
+
+          exit "$WAIT_EXIT_CODE"
