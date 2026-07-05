@@ -39,7 +39,7 @@ jobs:
           push: true
           tags: |
             ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:latest
-            ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+            ${{ vars.ECR_REGISTRY }}/${{ vars.ECR_REPOSITORY }}:sha-${{ github.sha }}
 
   deploy:
     name: Deploy image to EC2
