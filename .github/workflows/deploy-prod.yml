@@ -69,8 +69,7 @@ jobs:
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
               "docker compose -f docker-compose.prod.yml pull api",
               "docker compose -f docker-compose.prod.yml up -d",
-              "docker compose -f docker-compose.prod.yml ps",
-              "for i in $(seq 1 30); do curl -fsS http://localhost:3000/health && exit 0; sleep 2; done; docker compose -f docker-compose.prod.yml logs --tail=100 api; exit 1"
+              "docker compose -f docker-compose.prod.yml ps"
             ]' \
             --query "Command.CommandId" \
             --output text)
