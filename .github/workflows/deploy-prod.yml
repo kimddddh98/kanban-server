@@ -74,7 +74,19 @@ jobs:
             --query "Command.CommandId" \
             --output text)
 
+          set +e
           aws ssm wait command-executed \
             --region "${{ vars.AWS_REGION }}" \
             --command-id "$COMMAND_ID" \
             --instance-id "${{ vars.EC2_INSTANCE_ID }}"
+          WAIT_EXIT_CODE=$?
+          set -e
+
+          aws ssm get-command-invocation \
+            --region "${{ vars.AWS_REGION }}" \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ vars.EC2_INSTANCE_ID }}" \
+            --query '{Status:Status,ResponseCode:ResponseCode,StandardOutputContent:StandardOutputContent,StandardErrorContent:StandardErrorContent}' \
+            --output json
+
+          exit "$WAIT_EXIT_CODE"
