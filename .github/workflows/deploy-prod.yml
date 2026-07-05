@@ -64,13 +64,14 @@ jobs:
             --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy kanban-server from ECR" \
+            --timeout-seconds 900 \
             --parameters commands='[
               "cd ${{ vars.EC2_DEPLOY_PATH }}",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
-              "docker compose -f docker-compose.prod.yml pull api",
-              "docker compose -f docker-compose.prod.yml up -d",
+              "docker compose -f docker-compose.prod.yml pull --quiet api",
+              "docker compose -f docker-compose.prod.yml up -d --quiet-pull",
               "docker compose -f docker-compose.prod.yml ps"
-            ]' \
+            ]',executionTimeout='["900"]' \
             --query "Command.CommandId" \
             --output text)
 
