@@ -59,19 +59,29 @@ jobs:
 
       - name: Deploy to EC2 via SSM
         run: |
+          cat > ssm-parameters.json <<'PARAMETERS'
+          {
+            "commands": [
+              "cd ${{ vars.EC2_DEPLOY_PATH }}",
+              "git pull",
+              "printf \"DB_USERNAME=%s\\nDB_PASSWORD=%s\\nDB_DATABASE=%s\\n\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_USERNAME --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_PASSWORD --with-decryption --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_DATABASE --query Parameter.Value --output text)\" > .env",
+              "chmod 600 .env",
+              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
+              "docker compose -f docker-compose.prod.yml pull --quiet api",
+              "docker compose -f docker-compose.prod.yml up -d --quiet-pull",
+              "docker compose -f docker-compose.prod.yml ps"
+            ],
+            "executionTimeout": ["900"]
+          }
+          PARAMETERS
+
           COMMAND_ID=$(aws ssm send-command \
             --region "${{ vars.AWS_REGION }}" \
             --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy kanban-server from ECR" \
             --timeout-seconds 900 \
-            --parameters commands='[
-              "cd ${{ vars.EC2_DEPLOY_PATH }}",
-              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
-              "docker compose -f docker-compose.prod.yml pull --quiet api",
-              "docker compose -f docker-compose.prod.yml up -d --quiet-pull",
-              "docker compose -f docker-compose.prod.yml ps"
-            ]',executionTimeout='["900"]' \
+            --parameters file://ssm-parameters.json \
             --query "Command.CommandId" \
             --output text)
 

@@ -3,6 +3,8 @@ services:
     image: postgres:15-alpine
     container_name: postgres_prod
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -14,6 +16,8 @@ services:
     image: 643766342252.dkr.ecr.ap-northeast-2.amazonaws.com/kanban-server:latest
     container_name: nest_api_prod
     restart: always
+    env_file:
+      - .env
     ports:
       - '3000:3000'
     environment:
