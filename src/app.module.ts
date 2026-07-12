@@ -26,7 +26,10 @@ import { BatchModule } from './batch/batch.module';
         database: config.get<string>('DB_DATABASE'),
         autoLoadEntities: true, // Entity 자동 로드
         synchronize: true, // 개발 환경에서는 true (테이블 자동 생성)
-        logging: true, // SQL 쿼리 로그 출력,
+        logging:
+          config.get<string>('NODE_ENV') === 'production'
+            ? ['error', 'warn']
+            : true,
         entities: [UsersModel],
       }),
     }),

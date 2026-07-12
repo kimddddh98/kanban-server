@@ -64,7 +64,7 @@ jobs:
             "commands": [
               "cd ${{ vars.EC2_DEPLOY_PATH }}",
               "git pull",
-              "printf \"DB_USERNAME=%s\\nDB_PASSWORD=%s\\nDB_DATABASE=%s\\n\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_USERNAME --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_PASSWORD --with-decryption --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_DATABASE --query Parameter.Value --output text)\" > .env",
+              "printf \"NODE_ENV=production\\nDB_USERNAME=%s\\nDB_PASSWORD=%s\\nDB_DATABASE=%s\\n\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_USERNAME --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_PASSWORD --with-decryption --query Parameter.Value --output text)\" \"$(aws ssm get-parameter --region ${{ vars.AWS_REGION }} --name /kanban/prod/DB_DATABASE --query Parameter.Value --output text)\" > .env",
               "chmod 600 .env",
               "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ vars.ECR_REGISTRY }}",
               "docker compose -f docker-compose.prod.yml pull --quiet api",
