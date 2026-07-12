@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { UsersModel } from './users/entities/users.entity';
+import { BatchModule } from './batch/batch.module';
 
 @Module({
   imports: [
@@ -31,6 +32,8 @@ import { UsersModel } from './users/entities/users.entity';
     }),
 
     UsersModule,
+
+    BatchModule,
   ],
   controllers: [AppController],
   providers: [AppService],
