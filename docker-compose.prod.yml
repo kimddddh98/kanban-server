@@ -9,6 +9,13 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ap-northeast-2
+        awslogs-group: /kanban/prod/db
+        awslogs-stream: postgres
+        awslogs-create-group: 'true'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -28,5 +35,12 @@ services:
       DB_DATABASE: ${DB_DATABASE}
     depends_on:
       - db
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ap-northeast-2
+        awslogs-group: /kanban/prod/api
+        awslogs-stream: api
+        awslogs-create-group: 'true'
 volumes:
   postgres_data:
